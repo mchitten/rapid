@@ -472,7 +472,7 @@ describe Api::V1::TestersController, type: :controller do
     end
 
     it 'responds to field inclusion' do
-      get :index, format: 'json', fields: ['id']
+      get :index, fields: ['id'], format: 'json'
       expect(response.body).to eq([
         {
           id: 1

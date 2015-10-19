@@ -1,8 +1,8 @@
-class API::ArraySerializer < ::ActiveModel::ArraySerializer
+class API::ArraySerializer
+  include ActiveModel::Serializers::JSON
+
   attr_accessor :params, :serializer_options
   def initialize(object, options = {})
-    super(object, options)
-
     @serializer_options = options
     @params = options[:params] || {}
     @request = options[:request] || {}

@@ -23,10 +23,17 @@ class InvalidField < StandardError ; end
 #     associations :avatar
 #   end
 #
-class API::Serializer < ::ActiveModel::Serializer
+class API::Serializer
+  include ActiveModel::Serializers::JSON
+
   class << self
-    attr_accessor :_optional_fields, :_associations, :_default_associations,
-                  :_validations, :_options, :_cacheable_fields, :_cache
+    attr_accessor :_attributes, :_optional_fields, :_associations,
+                  :_default_associations, :_validations, :_options,
+                  :_cacheable_fields, :_cache
+
+    def attributes(*fields)
+      self._attributes = fields
+    end
 
     # Optional fields assigned to this serializer.  Optional fields need to
     # be explicitly requested (by passing +extra_fields[]=field+) to be
@@ -250,12 +257,17 @@ class API::Serializer < ::ActiveModel::Serializer
     end
   end
 
-  attr_accessor :params, :current_user
+  attr_accessor :params, :current_user, :object
   def initialize(object, options = {})
     # Ensure that we're passing around parameters and options.
     @params = options[:params] || {}
     @opts = options
     @current_user = options[:current_user]
+    @object = object
+
+    puts object.inspect
+    puts options.inspect
+    puts '~~~~~~~~~~~~'
 
     # Give the class access to the options too.
     self.class._options = options
@@ -312,16 +324,14 @@ class API::Serializer < ::ActiveModel::Serializer
       self.class._cache ||= {}
       self.class._cache["#{object.id}.#{object.updated_at.to_i}"] ||= {}
     end
-
-    super
   end
 
   # Ovewrwrites +ActiveModel::Serializer#serializable_hash# to allow inclusion
   # and exclusion of specific fields.
   #
   # @see ActiveModel::Serializer#serializable_hash
-  def serializable_hash
-    attrs = self.class._attributes.dup.keys
+  def serializable_hash(options = nil)
+    attrs = get_attributes.dup
 
     # Inclusive fields.
     if @opts[:only].present? || @opts[:fields].present?
@@ -333,6 +343,14 @@ class API::Serializer < ::ActiveModel::Serializer
     end
 
     filter_attributes(attrs)
+  end
+
+  def get_attributes
+    unless self.class._attributes.present?
+      self.class._attributes = object.attributes.keys
+    end
+
+    self.class._attributes
   end
 
   # @see APISerializer.warnings

@@ -97,13 +97,18 @@ module API
                options[:current_user] = current_user if defined? current_user
 
                serializer = response.active_model_serializer
-               if serializer <= ActiveModel::ArraySerializer
-                 serializer = API::ArraySerializer
-               end
+               puts 'WHAT THE FUCK'
+               puts serializer
+
+               # if serializer <= ActiveModel::ArraySerializer
+               #   serializer = API::ArraySerializer
+               # end
 
                @serialized_data = serializer.new(response, options)
+               puts @serialized_data.inspect
                @serialized_data.as_json(root: false)
              else
+              puts 'da fuck?'
                response
              end
 
