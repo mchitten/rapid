@@ -1,5 +1,5 @@
 # encoding: utf-8
-module Rapid
+module API
   # Provides CanCanCan functionality.
   module Can
     def authorize!(ability, obj, *args)

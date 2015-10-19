@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-module Rapid
+module API
   # The +QuirkyApi::Base+ class inherits from ActionController::Metal to offer
   # only the functionality that the API requires.  Using
   # +ActionController::Metal+ means that many standard rails methods

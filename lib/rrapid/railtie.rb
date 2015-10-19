@@ -1,4 +1,4 @@
-module Rapid
+module API
   class Railtie < Rails::Railtie
     initializer 'rapid.insert_middleware' do |app|
       # Ensure that GZIP is used at the very least for the API.

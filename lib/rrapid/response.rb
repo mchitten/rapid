@@ -2,7 +2,7 @@
 
 require 'rapid/response/errors'
 
-module Rapid
+module API
   # The response module handles response and status code methods for the API.
   module Response
     include Errors

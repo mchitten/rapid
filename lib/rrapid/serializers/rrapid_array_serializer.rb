@@ -1,4 +1,4 @@
-class RapidArraySerializer < ::ActiveModel::ArraySerializer
+class API::ArraySerializer < ::ActiveModel::ArraySerializer
   attr_accessor :params, :serializer_options
   def initialize(object, options = {})
     super(object, options)

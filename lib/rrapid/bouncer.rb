@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-module Rapid
+module API
   # The Bouncer module ensures that the API request is valid.  It also removes
   # before_filters that would potentially interfere with the API and sets
   # generic before_filters to be shared across all API's.

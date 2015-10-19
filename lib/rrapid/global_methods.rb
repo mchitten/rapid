@@ -1,4 +1,4 @@
-module Rapid
+module API
   # Global methods are methods that are available to the default application,
   # as well as the API controllers.
   module Global

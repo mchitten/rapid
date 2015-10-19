@@ -1,22 +1,22 @@
 $LOAD_PATH.push File.expand_path('../lib', __FILE__)
 
 # Maintain your gem's version:
-require 'rapid/version'
+require 'rrapid/version'
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name        = 'rapid-api'
-  s.version     = Rapid::VERSION
+  s.name        = 'rrapid'
+  s.version     = API::VERSION
   s.authors     = ['Michael Chittenden', 'Quirky Platform Team']
   s.email       = ['mchitten@gmail.com', 'platform@quirky.com']
   s.homepage    = 'https://www.mchitten.com'
-  s.summary     = 'Rapid is a set of tools that promotes Rapid API Development.'
-  s.description = 'Rapid provides a base framework to help promote rapid API development.'
+  s.summary     = 'Rapid Ruby API Development'
+  s.description = 'RRapid provides a base framework to help promote rapid API development.'
 
   s.files = Dir['{app,config,db,lib}/**/*', 'Rakefile', 'README.rdoc']
 
-  s.add_dependency 'active_model_serializers', '0.8.1'
-  s.add_dependency 'will_paginate', '3.0.5'
+  s.add_dependency 'active_model_serializers', '0.10.0.rc3'
+  s.add_dependency 'will_paginate', '3.0.6'
   s.add_dependency 'newrelic_rpm'
   s.add_dependency 'hirb'
   s.add_dependency 'responders'

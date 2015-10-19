@@ -1,4 +1,4 @@
-module Rapid
+module API
   module Response
     module Errors
       # Returns a 400 bad request response.

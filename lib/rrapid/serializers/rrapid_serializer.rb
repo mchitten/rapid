@@ -23,7 +23,7 @@ class InvalidField < StandardError ; end
 #     associations :avatar
 #   end
 #
-class RapidSerializer < ::ActiveModel::Serializer
+class API::Serializer < ::ActiveModel::Serializer
   class << self
     attr_accessor :_optional_fields, :_associations, :_default_associations,
                   :_validations, :_options, :_cacheable_fields, :_cache
