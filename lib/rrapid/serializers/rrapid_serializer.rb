@@ -362,13 +362,7 @@ class API::Serializer
   def self.get_serializer(object)
     if object.respond_to?(:active_model_serializer) &&
        object.try(:active_model_serializer).present?
-
-     serializer = object.active_model_serializer
-     if serializer <= ActiveModel::ArraySerializer
-       serializer = API::ArraySerializer
-     end
-
-     serializer
+     object.active_model_serializer
    else
      nil
    end
