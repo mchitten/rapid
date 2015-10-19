@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-class PostSerializer < RapidSerializer
+class PostSerializer < API::Serializer
   attributes :id, :title, :blurb
   optional :joke
   associations :myself

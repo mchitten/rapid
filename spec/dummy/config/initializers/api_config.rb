@@ -1,4 +1,4 @@
-Rapid.configure do |config|
+API.configure do |config|
   # For development purposes.
   # config.exception_handler = ->(e) { fail e }
 end

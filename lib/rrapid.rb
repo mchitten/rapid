@@ -7,10 +7,10 @@ InvalidAssociation = Class.new(StandardError)
 require 'active_model_serializers'
 
 # QuirkyAPI methods that are available to the entire app.
-require 'rapid/global_methods'
+require 'rrapid/global_methods'
 include API::Global
 
-require 'rapid/railtie'
+require 'rrapid/railtie'
 
 module API
   # Core modules

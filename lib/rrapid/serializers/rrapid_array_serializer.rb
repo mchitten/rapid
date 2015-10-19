@@ -9,6 +9,6 @@ class API::ArraySerializer < ::ActiveModel::ArraySerializer
   end
 
   def warnings(params)
-    RapidSerializer.warnings(params)
+    API::Serializer.warnings(params)
   end
 end

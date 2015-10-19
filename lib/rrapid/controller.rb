@@ -6,10 +6,10 @@ module API
   # +ActionController::Metal+ means that many standard rails methods
   # may be unavailable in the API.
   #
-  # Extend from +Rapid::Base+ to include API functionality.
+  # Extend from +API::Base+ to include API functionality.
   #
   # @example
-  #  class Api::V1::InventionsController < Rapid::Base
+  #  class Api::V1::InventionsController < API::Base
   #    # Intentionally left blank
   #  end
   class Base < ActionController::Metal
@@ -33,16 +33,16 @@ module API
     include ActionController::ConditionalGet
 
     # API functionality.
-    include Rapid::Auth
-    include Rapid::Rescue
-    include Rapid::Bouncer
-    include Rapid::Response
-    include Rapid::Can
-    include Rapid::Global
+    include API::Auth
+    include API::Rescue
+    include API::Bouncer
+    include API::Response
+    include API::Can
+    include API::Global
 
     def self.inherited(base)
-      base.send(:include, ::Rapid.auth_system) if Rapid.has_auth_system?
-      base.send(:include, Rapid::Bouncer)
+      base.send(:include, ::API.auth_system) if API.has_auth_system?
+      base.send(:include, API::Bouncer)
 
       base.send(:include, ActionController::Instrumentation)
 

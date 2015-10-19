@@ -1,17 +1,17 @@
 # encoding: utf-8
 
-require 'rapid/response/errors'
 
 module API
   # The response module handles response and status code methods for the API.
   module Response
+    require 'rrapid/response/errors'
     include Errors
 
     # Returns a JSON response for the API.
     #
     # @param response [Mixed Array|String|Hash|nil|Bool] The data to return.
     # @param options [Hash] A hash of options to apss along with the response.
-    #                       These options will be passed into RapidSerializer
+    #                       These options will be passed into API::Serializer
     #                       for processing.
     #
     # @example
@@ -44,7 +44,7 @@ module API
       @api_response_envelope = if options.key?(:envelope)
                                  options[:envelope]
                                else
-                                 Rapid.envelope
+                                 API.envelope
                                end
 
       if block_given?
@@ -98,7 +98,7 @@ module API
 
                serializer = response.active_model_serializer
                if serializer <= ActiveModel::ArraySerializer
-                 serializer = RapidArraySerializer
+                 serializer = API::ArraySerializer
                end
 
                @serialized_data = serializer.new(response, options)
@@ -166,7 +166,7 @@ module API
       # you should use the meta 'status' attribute to retrieve the actual
       # status code.
       callback = params[:callback].presence || options[:callback]
-      if Rapid.jsonp? && callback.present?
+      if API.jsonp? && callback.present?
         # JSONP responses must be wrapped in an envelope so there can be meta information.
         @api_response_envelope = 'data' if @api_response_envelope.blank?
         (options[:elements] ||= {}).merge!(meta: { status: options[:status].presence || 200 })
@@ -180,7 +180,7 @@ module API
       return data unless data.is_a?(Hash)
 
       # Check for warnings if applicable.
-      if Rapid.warn_invalid_fields
+      if API.warn_invalid_fields
         if @serialized_data.present?
           warnings = @serialized_data.warnings(params)
           data[:warnings] = warnings if warnings.present?
@@ -193,7 +193,7 @@ module API
       data.merge!(options[:elements]) if options[:elements].present?
 
       # If configured, we pretty JSON responses.  This is the default response.
-      data = JSON.pretty_generate(data) if Rapid.pretty_print?
+      data = JSON.pretty_generate(data) if API.pretty_print?
 
       data
     end
@@ -228,7 +228,7 @@ module API
       # and specify the callback to +render+.  Otherwise, we use the default
       # status code.
       callback = params[:callback].presence || options[:callback]
-      if Rapid.jsonp? && callback.present?
+      if API.jsonp? && callback.present?
         renderable[:callback] = callback
         renderable[:status] = 200
       else
@@ -260,7 +260,7 @@ module API
 
     private
 
-    # Envelopes data based on +Rapid.envelope+.
+    # Envelopes data based on +API.envelope+.
     #
     # @param data [Object] Any type of object.
     #

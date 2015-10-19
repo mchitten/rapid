@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-class TesterSerializer < RapidSerializer
+class TesterSerializer < API::Serializer
   attributes :id, :name
   optional :last_name
   associations :product, :post

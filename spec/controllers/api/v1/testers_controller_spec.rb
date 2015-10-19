@@ -5,7 +5,7 @@ require 'spec_helper'
 shared_examples_for 'a wrappable endpoint' do |body, method, endpoint|
   context 'with no envelope' do
     before do
-      Rapid.envelope = nil
+      API.envelope = nil
     end
 
     it 'returns just the body' do
@@ -16,11 +16,11 @@ shared_examples_for 'a wrappable endpoint' do |body, method, endpoint|
 
   context 'with an envelope' do
     before do
-      Rapid.envelope = 'data'
+      API.envelope = 'data'
     end
 
     after do
-      Rapid.envelope = nil
+      API.envelope = nil
     end
 
     it 'returns the body, wrapped in an envelope' do
@@ -31,7 +31,7 @@ shared_examples_for 'a wrappable endpoint' do |body, method, endpoint|
 end
 
 describe Api::V1::TestersController, type: :controller do
-  before { Rapid.pretty_print = false }
+  before { API.pretty_print = false }
 
   describe 'GET #as_one' do
     before { @tester = FactoryGirl.create(:tester, name: 'Tester', last_name: 'Atqu') }
@@ -100,7 +100,7 @@ describe Api::V1::TestersController, type: :controller do
 
     context 'with no envelope' do
       before do
-        Rapid.envelope = nil
+        API.envelope = nil
       end
 
       it 'returns just the body' do
@@ -111,11 +111,11 @@ describe Api::V1::TestersController, type: :controller do
 
     context 'with an envelope' do
       before do
-        Rapid.envelope = 'data'
+        API.envelope = 'data'
       end
 
       after do
-        Rapid.envelope = nil
+        API.envelope = nil
       end
 
       it 'returns the body, wrapped in an envelope' do
@@ -157,7 +157,7 @@ describe Api::V1::TestersController, type: :controller do
           .to receive(:errors)
           .and_raise(StandardError.new('Blah'))
 
-        allow(Rapid).to receive(:exception_handler).and_return(->(e) { raise e })
+        allow(API).to receive(:exception_handler).and_return(->(e) { raise e })
 
         expect { get :errors }.to raise_error('Blah')
       end
@@ -321,11 +321,11 @@ describe Api::V1::TestersController, type: :controller do
   describe 'GET #with_elements' do
     context 'with an envelope' do
       before do
-        Rapid.envelope = 'data'
+        API.envelope = 'data'
       end
 
       after do
-        Rapid.envelope = nil
+        API.envelope = nil
       end
 
       it 'returns data with top level elements' do
@@ -374,14 +374,14 @@ describe Api::V1::TestersController, type: :controller do
 
   describe 'GET #with_callback' do
     context 'if jsonp is enabled' do
-      before { Rapid.jsonp = true }
+      before { API.jsonp = true }
       context 'with an envelope' do
         before do
-          Rapid.envelope = 'data'
+          API.envelope = 'data'
         end
 
         after do
-          Rapid.envelope = nil
+          API.envelope = nil
         end
 
         it 'returns data wrapped in a jsonp callback' do
@@ -397,7 +397,7 @@ describe Api::V1::TestersController, type: :controller do
         end
       end
       context 'with no envelope' do
-        before { Rapid.envelope = nil }
+        before { API.envelope = nil }
         it 'returns a jsonp string' do
           get :with_callback
           expect(response.body).to eq('/**/test({"data":"hello","meta":{"status":200}})')
@@ -412,7 +412,7 @@ describe Api::V1::TestersController, type: :controller do
       end
     end
     context 'if jsonp is disabled' do
-      before { Rapid.jsonp = false }
+      before { API.jsonp = false }
       it 'returns just a body' do
         get :with_callback
         expect(response.body).to eq 'hello'
@@ -515,15 +515,15 @@ describe Api::V1::TestersController, type: :controller do
       context 'if warn_invalid_fields is true' do
         context 'and there is an envelope' do
           before do
-            Rapid.envelope = 'data'
+            API.envelope = 'data'
           end
 
           after do
-            Rapid.envelope = nil
+            API.envelope = nil
           end
 
           it 'throws a warning for bad optional fields' do
-            allow(Rapid).to receive(:warn_invalid_fields).and_return(true)
+            allow(API).to receive(:warn_invalid_fields).and_return(true)
 
             get :index, format: 'json', extra_fields: ['favorite_animal']
             expect(response.body).to eq({
@@ -546,11 +546,11 @@ describe Api::V1::TestersController, type: :controller do
 
         context 'and there is no envelope' do
           before do
-            Rapid.envelope = nil
+            API.envelope = nil
           end
 
           it 'does not show warnings' do
-            allow(Rapid).to receive(:warn_invalid_fields).and_return(true)
+            allow(API).to receive(:warn_invalid_fields).and_return(true)
 
             get :index, format: 'json', extra_fields: ['favorite_animal']
             expect(response.body).to eq([
@@ -570,15 +570,15 @@ describe Api::V1::TestersController, type: :controller do
       context 'if warn_invalid_fields is falsey' do
         context 'and there is an envelope' do
           before do
-            Rapid.envelope = 'data'
+            API.envelope = 'data'
           end
 
           after do
-            Rapid.envelope = nil
+            API.envelope = nil
           end
 
           it 'throws no warning for bad optional fields' do
-            allow(Rapid).to receive(:warn_invalid_fields).and_return(false)
+            allow(API).to receive(:warn_invalid_fields).and_return(false)
 
             get :index, format: 'json', extra_fields: ['favorite_animal']
             expect(response.body).to eq({
@@ -598,11 +598,11 @@ describe Api::V1::TestersController, type: :controller do
 
         context 'and there is no envelope' do
           before do
-            Rapid.envelope = nil
+            API.envelope = nil
           end
 
           it 'throws no warning for bad optional fields' do
-            allow(Rapid).to receive(:warn_invalid_fields).and_return(false)
+            allow(API).to receive(:warn_invalid_fields).and_return(false)
 
             get :index, format: 'json', extra_fields: ['favorite_animal']
             expect(response.body).to eq([
@@ -639,7 +639,7 @@ describe Api::V1::TestersController, type: :controller do
       context 'if validate_associations is true' do
         context 'if you specify an invalid association' do
           it 'returns an error' do
-            allow(Rapid).to receive(:validate_associations).and_return(true)
+            allow(API).to receive(:validate_associations).and_return(true)
             get :index, format: 'json', associations: ['octopus']
             expect(response.body).to eq({
               errors: "The 'octopus' association does not exist."
@@ -650,7 +650,7 @@ describe Api::V1::TestersController, type: :controller do
       context 'if validate_associations is false' do
         context 'if you specify an invalid association' do
           it 'does not throw an error' do
-            allow(Rapid).to receive(:validate_associations).and_return(nil)
+            allow(API).to receive(:validate_associations).and_return(nil)
             get :index, format: 'json', associations: ['octopus']
             expect(response.body).to eq([
               {

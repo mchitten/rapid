@@ -2,9 +2,9 @@
 
 class InvalidField < StandardError ; end
 
-# RapidSerializer is the base serializer, providing functionality
+# APISerializer is the base serializer, providing functionality
 # that inherits from and extends ActiveModel::Serializers.  All serializers
-# that inherit from RapidSerializer will receive the following (new)
+# that inherit from APISerializer will receive the following (new)
 # functionality:
 #
 # * Optional fields
@@ -17,7 +17,7 @@ class InvalidField < StandardError ; end
 # * Sub-fields (fields within associations)
 #
 # @example
-#   class UserSerializer < RapidSerializer
+#   class UserSerializer < APISerializer
 #     attributes :id, :name
 #     optional :email
 #     associations :avatar
@@ -38,7 +38,7 @@ class API::Serializer < ::ActiveModel::Serializer
     # @param fields [Array] A comma-separated list of fields that are optional.
     #
     # @example
-    #   class UserSerializer < RapidSerializer
+    #   class UserSerializer < APISerializer
     #     optional :email, :is_russian
     #   end
     #
@@ -55,7 +55,7 @@ class API::Serializer < ::ActiveModel::Serializer
     # @param associations [Array] A comma-separated list of associations.
     #
     # @example
-    #   class UserSerializer < RapidSerializer
+    #   class UserSerializer < APISerializer
     #     associations :profile
     #   end
     #
@@ -75,7 +75,7 @@ class API::Serializer < ::ActiveModel::Serializer
     # @param default_associations [Array] A comma-separated list of associations
     #                                     that should always show up.
     # @example
-    #   class UserSerializer < RapidSerializer
+    #   class UserSerializer < APISerializer
     #     associations :profile, :avatar
     #     default_associations :profile
     #   end
@@ -96,12 +96,12 @@ class API::Serializer < ::ActiveModel::Serializer
     #                           attribute.
     #
     # @example
-    #   class UserSerializer < RapidSerializer
+    #   class UserSerializer < APISerializer
     #     attributes :id, :name, :email
     #     verify_permissions :email, -> { @current_user.can? :update, object rescue false }
     #   end
     #
-    #   class UserSerializer < RapidSerializer
+    #   class UserSerializer < APISerializer
     #     attributes :id, :name, :email
     #     verify_permissions [:name, :email] do
     #       @current_user.can? :update, object rescue false
@@ -149,20 +149,20 @@ class API::Serializer < ::ActiveModel::Serializer
     #    attribute, it will be cached.
     #
     #  @example
-    #    class UserSerializer < RapidSerializer
+    #    class UserSerializer < APISerializer
     #      attributes :first, :last, :email
     #      caches :first, :last
     #    end
     #
     #  @example
-    #    class UserSerializer < RapidSerializer
+    #    class UserSerializer < APISerializer
     #      attributes :first, :last, :email
     #      optional :bio
     #      caches :optional_fields
     #    end
     #
     #  @example
-    #    class UserSerializer < RapidSerializer
+    #    class UserSerializer < APISerializer
     #      attributes :first, :last, :email
     #      optional :bio
     #      associations :profile
@@ -227,10 +227,10 @@ class API::Serializer < ::ActiveModel::Serializer
     #     ]
     #   }
     #
-    # @see Rapid.configure
+    # @see API.configure
     def warnings(params)
       # Ignore unless warn_invalid_fields is set.
-      return unless Rapid.warn_invalid_fields
+      return unless API.warn_invalid_fields
 
       # Basic information about the request.
       params = params.symbolize_keys
@@ -316,11 +316,6 @@ class API::Serializer < ::ActiveModel::Serializer
     super
   end
 
-  # There is an +options+ method somewhere in +ActiveModel::Serializer+ that
-  # prevents method named "options" from being called correctly.  This fixes
-  # that by removing the options scope.
-  undef_method(:options)
-
   # Ovewrwrites +ActiveModel::Serializer#serializable_hash# to allow inclusion
   # and exclusion of specific fields.
   #
@@ -340,7 +335,7 @@ class API::Serializer < ::ActiveModel::Serializer
     filter_attributes(attrs)
   end
 
-  # @see RapidSerializer.warnings
+  # @see APISerializer.warnings
   def warnings(params)
     self.class.warnings(params)
   end
@@ -352,7 +347,7 @@ class API::Serializer < ::ActiveModel::Serializer
 
      serializer = object.active_model_serializer
      if serializer <= ActiveModel::ArraySerializer
-       serializer = RapidArraySerializer
+       serializer = API::ArraySerializer
      end
 
      serializer
@@ -373,7 +368,7 @@ class API::Serializer < ::ActiveModel::Serializer
   # Returns requested associations.  This also validates the presence of
   # associations on the request, if configured.
   #
-  # @see Rapid.configuration
+  # @see API.configuration
   #
   # @raises InvalidAssociation
   # @returns [Array] An array of valid associations.
@@ -381,7 +376,7 @@ class API::Serializer < ::ActiveModel::Serializer
     returned = @associations & [*@opts[:associations]].map(&:to_sym)
 
     # Stop here unless we want to throw exceptions for bad associations.
-    return returned unless Rapid.validate_associations
+    return returned unless API.validate_associations
 
     # Find invalid associations and throw an exception for them.
     if returned.blank? || returned.length != [*@opts[:associations]].length
@@ -411,7 +406,7 @@ class API::Serializer < ::ActiveModel::Serializer
     begin
       data = get_field(data, false)
     rescue InvalidField => e
-      if Rapid.validate_associations
+      if API.validate_associations
         raise InvalidAssociation,
               "The '#{data}' association does not exist."
       else
@@ -428,7 +423,7 @@ class API::Serializer < ::ActiveModel::Serializer
     sub_options[:current_user] = @current_user
 
     if data.is_a?(Array)
-      RapidArraySerializer.new(data, sub_options).as_json(root: false)
+      API::ArraySerializer.new(data, sub_options).as_json(root: false)
     elsif data.respond_to?(:active_model_serializer) && data.try(:active_model_serializer).present?
       data.active_model_serializer.new(data, sub_options).as_json(root: false)
     else

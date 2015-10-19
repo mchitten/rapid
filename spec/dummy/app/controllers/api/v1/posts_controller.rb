@@ -2,7 +2,7 @@
 
 require 'rapid/controller'
 
-class Api::V1::PostsController < Rapid::Base
+class Api::V1::PostsController < API::Base
   def index
     @posts = paginate(Post.all)
     pagination_headers(@posts, url: [:api, :v1, :posts])

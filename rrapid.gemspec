@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
 
   s.files = Dir['{app,config,db,lib}/**/*', 'Rakefile', 'README.rdoc']
 
-  s.add_dependency 'active_model_serializers', '0.10.0.rc3'
+  s.add_dependency 'active_model_serializers', '0.8.2'
   s.add_dependency 'will_paginate', '3.0.6'
   s.add_dependency 'newrelic_rpm'
   s.add_dependency 'hirb'

@@ -2,7 +2,7 @@
 
 module API
   # The Rescue module rescues certain exceptions and returns their responses
-  # in a JSON response.  If +Rapid.show_exceptions+ is specified, all
+  # in a JSON response.  If +API.show_exceptions+ is specified, all
   # of the rescued exceptions below will not be rescued, and will raise.
   module Rescue
     def self.included(base)

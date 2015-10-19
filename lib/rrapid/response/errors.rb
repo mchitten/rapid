@@ -108,8 +108,8 @@ module API
       # @param e [Exception] The exception that was raised.
       #
       def internal_error(e)
-        if Rapid.exception_handler
-          Rapid.exception_handler.call(e)
+        if API.exception_handler
+          API.exception_handler.call(e)
         else
           Rails.logger.error e.message
         end

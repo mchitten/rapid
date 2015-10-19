@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-require 'rapid/controller'
+require 'rrapid/controller'
 # Tester class for testing.
-class Api::V1::TestersController < Rapid::Base
+class Api::V1::TestersController < API::Base
   def index
     respond_with Tester.all
   end

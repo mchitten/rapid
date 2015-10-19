@@ -50,7 +50,7 @@ module API
     #         ]
     #       }
     def serialize(object, serializer = nil, options = {})
-      serializer = RapidSerializer.get_serializer(object) if serializer.blank?
+      serializer = API::Serializer.get_serializer(object) if serializer.blank?
       return object.as_json(root: false) if serializer.blank?
 
       options ||= {}
