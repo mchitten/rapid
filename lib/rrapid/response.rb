@@ -101,7 +101,6 @@ module API
                @serialized_data = serializer.new(response, options)
                @serialized_data.as_json(root: false)
              else
-              puts 'da fuck?'
                response
              end
 

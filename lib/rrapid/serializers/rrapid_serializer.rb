@@ -28,8 +28,7 @@ class API::Serializer
 
   class << self
     attr_accessor :_attributes, :_optional_fields, :_associations,
-                  :_default_associations, :_validations, :_options,
-                  :_cacheable_fields, :_cache
+                  :_default_associations, :_validations, :_options
 
     def attributes(*fields)
       self._attributes = fields
@@ -124,89 +123,6 @@ class API::Serializer
       end
     end
 
-    # This allows you to cache certain fields within a serializer.  The issue
-    # with caching an entire serialized object is that of persistence --
-    # a lot of things change, all the time, making it very difficult to cache
-    # an entire object and ensure the correct responses.
-    #
-    # rapid takes a per-field approach to caching.  When an object is
-    # serialized, every field is configured to be cached will be cached
-    # invididually, allowing for more fine-grained caching abilities.  Each
-    # field has a cache key like so:
-    #
-    #    [object_id].[updated_at]/[field_name]
-    #
-    # Therefore, making changes to the overlying object will automatically
-    # bust the cache for the serialized object and return the new information.
-    #
-    # +caches+ allows multiple arguments, and may be passed any or all of the
-    # following:
-    #
-    #  * +:all+ will cache every field on the object, including attributes,
-    #    optional fields and associations.
-    #  * +:associations+ will cache only the associations on an object.  This
-    #    is marginally more tricky since associations tend to be an entirely
-    #    different object on their own.  In order to properly bust caches on
-    #    cached associations, be sure to touch the cached object.
-    #  * +:optional_fields+ will cache all optional fields.
-    #  * +:fields+ will cache all attributes.
-    #  * +:field_name+ will cache the field of name +field_name+, regardless
-    #    of what type that field is.  This manes that if the field is an
-    #    association, it will be cached.  Likewise, if it is a 'regular'
-    #    attribute, it will be cached.
-    #
-    #  @example
-    #    class UserSerializer < APISerializer
-    #      attributes :first, :last, :email
-    #      caches :first, :last
-    #    end
-    #
-    #  @example
-    #    class UserSerializer < APISerializer
-    #      attributes :first, :last, :email
-    #      optional :bio
-    #      caches :optional_fields
-    #    end
-    #
-    #  @example
-    #    class UserSerializer < APISerializer
-    #      attributes :first, :last, :email
-    #      optional :bio
-    #      associations :profile
-    #      caches :all
-    #    end
-    #
-    #  @param [*args]  A list of cacheable attributes, per the notes above.
-    #
-    def caches(*attrs)
-      fields = []
-
-      if attrs.include? :all
-        fields.concat [*self._attributes.keys].map(&:to_sym) +
-                      [*self._optional_fields].map(&:to_sym) +
-                      [*self._associations].map(&:to_sym)
-
-        attrs.delete(:all)
-      end
-
-      if attrs.include? :associations
-        fields.concat self._associations
-        attrs.delete(:associations)
-      end
-
-      if attrs.include? :optional_fields
-        fields.concat self._optional_fields
-        attrs.delete(:optional_fields)
-      end
-
-      if attrs.include? :fields
-        fields.concat self._attributes
-        attrs.delete(:fields)
-      end
-
-      self._cacheable_fields = fields.concat(attrs)
-    end
-
     # Returns warnings about your request. Warnings are messages that alert
     # you to things that are wrong, but not breaking.  In this initial release,
     # warnings are only triggered by requesting optional fields that do not
@@ -265,9 +181,6 @@ class API::Serializer
     @current_user = options[:current_user]
     @object = object
 
-    puts object.inspect
-    puts options.inspect
-    puts '~~~~~~~~~~~~'
 
     # Give the class access to the options too.
     self.class._options = options
@@ -318,11 +231,6 @@ class API::Serializer
       @opts[:associations]
         .map!(&:to_sym)
         .uniq!
-    end
-
-    if object.respond_to?(:id) && object.respond_to?(:updated_at)
-      self.class._cache ||= {}
-      self.class._cache["#{object.id}.#{object.updated_at.to_i}"] ||= {}
     end
   end
 
@@ -443,43 +351,6 @@ class API::Serializer
     end
   end
 
-  # Returns a field's information from cache, if possible.
-  #
-  # @param [String|Symbol] field  The field to retrieve from cache.
-  # @return [Mixed] The returned value.
-  def _cached_field(field)
-    cached_obj = self.class._cache["#{object.id}.#{object.updated_at.to_i}"] || {}
-    cached_obj[field]
-  end
-
-  # Stores a +field+'s +value+ in cache.
-  #
-  # @param [String|Symbol] field  The name of the field to store in cache.
-  # @param [Mixed] value  The value of that field.
-  def _set_cached_field(field, value)
-    cached_obj = self.class._cache["#{object.id}.#{object.updated_at.to_i}"] || {}
-    cached_obj[field] = Rails.cache.fetch([object.cache_key, field]) { value }
-  end
-
-  # Checks whether a certain field is configured to be cached.
-  #
-  # @param [String|Symbol] field  The field ot ocnfirm configuration on.
-  # @return [Boolean]
-  # @see caches
-  def _cached?(field)
-    self.class._cacheable_fields.present? && self.class._cacheable_fields.include?(field.to_sym)
-  end
-
-  # Checks whether a certain field is in the cache.
-  #
-  # @param [String|Symbol] field  The field to check for.
-  # @return [Boolean]
-  def _in_cache?(field)
-    return false if self.class._cache.blank?
-    cached_obj = self.class._cache["#{object.id}.#{object.updated_at.to_i}"]
-    cached_obj.present? && cached_obj[field].present?
-  end
-
   # Attempts to get the value of a certain field by first checking the
   # serializer, then the object.  If neither the serializer nor the
   # object respond to the method, raises an +InvalidField+ exception.
@@ -495,10 +366,6 @@ class API::Serializer
   #                 neither the serializer nor the object responds to the
   #                 assumed method.
   def get_field(field, serialize = true)
-    if _cached?(field)
-      return _cached_field(field) if _in_cache?(field)
-    end
-
     response = if respond_to?(field)
                  send(field)
                elsif object.respond_to?(field)
@@ -511,11 +378,7 @@ class API::Serializer
       response = response.serializable_hash
     end
 
-    if _cached?(field)
-      _set_cached_field(field, response)
-    else
-      response
-    end
+    response
   end
 
   # Confirms that a field passes validations.
