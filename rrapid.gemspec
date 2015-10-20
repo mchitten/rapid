@@ -15,9 +15,8 @@ Gem::Specification.new do |s|
 
   s.files = Dir['{app,config,db,lib}/**/*', 'Rakefile', 'README.rdoc']
 
-  s.add_dependency 'will_paginate', '3.0.6'
+  s.add_dependency 'will_paginate', '3.0.7'
   s.add_dependency 'newrelic_rpm'
-  s.add_dependency 'hirb'
   s.add_dependency 'responders'
 
   s.add_development_dependency 'faker'

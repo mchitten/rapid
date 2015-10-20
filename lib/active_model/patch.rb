@@ -16,8 +16,12 @@ module API
 end
 
 class Array
-  include API::Serializable
+  def active_model_serializer
+    API::ArraySerializer
+  end
+end
 
+class ActiveRecord::Relation
   def active_model_serializer
     API::ArraySerializer
   end

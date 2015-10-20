@@ -44,7 +44,6 @@ module API
         #
         # @see associations
         def default_associations(*default_associations)
-          Rails.logger.warn "DEPRECATION WARNING: 'default_associations' is deprecated and will be removed soon.  Ask for your associations on a per-endpoint basis."
           self._default_associations = default_associations
         end
       end

@@ -1,6 +1,7 @@
 module API
   class Serializer
     include ActiveModel::Serializers::JSON
+    InvalidField = Class.new(StandardError)
 
     require_relative 'helpers/attribute_helpers'
     include AttributeHelpers
@@ -10,6 +11,18 @@ module API
 
     require_relative 'helpers/association_fields'
     include AssociationFields
+
+    class << self
+      attr_writer :_key
+
+      def _key
+        @_key || {}
+      end
+
+      def key(keys)
+        self._key = keys
+      end
+    end
 
     attr_reader :object, :options, :current_user
     attr_accessor :_serializable_fields
@@ -30,7 +43,19 @@ module API
 
       self._serializable_fields = attribute_names
 
-      generate_serialized_hash
+      response = generate_serialized_hash
+
+      key = if options.key?(:key)
+              options[:key]
+            else
+              self.class._key
+            end
+
+      key = key[:one] if key.is_a?(Hash)
+
+      return response unless key.present?
+
+      { key => response }
     end
 
     def validates?(attribute)
@@ -45,7 +70,7 @@ module API
     end
 
     def generate_serialized_hash
-      serializable_fields.each_with_object({}) do |attribute, attrs|
+      @serialized_hash ||= serializable_fields.each_with_object({}) do |attribute, attrs|
         next unless validates?(attribute)
         attrs[attribute] = get_field(attribute)
       end
