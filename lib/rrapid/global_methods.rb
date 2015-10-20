@@ -49,7 +49,8 @@ module API
     #           }
     #         ]
     #       }
-    def serialize(object, serializer = nil, options = {})
+    def serialize(object, options = {})
+      serializer = options.fetch(:serializer, nil)
       serializer = API::Serializer.serializer_for(object) if serializer.blank?
       return object.as_json(root: false) if serializer.blank?
 

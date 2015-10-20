@@ -23,7 +23,7 @@ class API::ArraySerializer
             object.model.new.active_model_serializer._key
           else
             if object.length > 1
-              object.first.active_model_serializer._key
+              object.first.try(:active_model_serializer).try(:_key)
             end
           end
 

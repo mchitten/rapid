@@ -108,7 +108,7 @@ module API
         sub_options[:extra_fields] = sub_optional_fields if sub_optional_fields.present?
         sub_options[:params] = {}
 
-        response = serialize(response, nil, sub_options)
+        response = serialize(response, sub_options)
         # serializer = API::Serializer.serializer_for(response)
         # if serializer
         #   response = serializer.new(response, options).as_json(root: false)
