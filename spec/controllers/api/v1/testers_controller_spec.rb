@@ -227,13 +227,13 @@ describe Api::V1::TestersController, type: :controller do
   describe 'GET #with_bad_verify_perms' do
     let!(:post) { FactoryGirl.create(:post) }
     before do
-      allow_any_instance_of(PostSerializer)
+      allow_any_instance_of(API::Serializer)
         .to receive(:validates?)
         .and_call_original
 
-      allow_any_instance_of(PostSerializer)
+      allow_any_instance_of(API::Serializer)
         .to receive(:validates?)
-        .with(:title)
+        .with('title')
         .and_return(false)
     end
 
@@ -472,7 +472,7 @@ describe Api::V1::TestersController, type: :controller do
     end
 
     it 'responds to field inclusion' do
-      get :index, fields: ['id'], format: 'json'
+      get :index, only: ['id'], format: 'json'
       expect(response.body).to eq([
         {
           id: 1
@@ -484,7 +484,7 @@ describe Api::V1::TestersController, type: :controller do
     end
 
     it 'responds to field exclusion' do
-      get :index, format: 'json', exclude: ['id']
+      get :index, format: 'json', except: ['id']
       expect(response.body).to eq([
         {
           name: 'Mike'
@@ -628,11 +628,11 @@ describe Api::V1::TestersController, type: :controller do
           {
             id: 1,
             name: 'Mike'
-          }.merge(product_serialized).merge(post_serialized),
+          }.merge(post_serialized).merge(product_serialized),
           {
             id: 2,
             name: 'Tom'
-          }.merge(product_serialized).merge(post_serialized)
+          }.merge(post_serialized).merge(product_serialized)
         ].to_json)
       end
 

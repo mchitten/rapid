@@ -50,19 +50,14 @@ module API
     #         ]
     #       }
     def serialize(object, serializer = nil, options = {})
-      serializer = API::Serializer.get_serializer(object) if serializer.blank?
+      serializer = API::Serializer.serializer_for(object) if serializer.blank?
       return object.as_json(root: false) if serializer.blank?
 
       options ||= {}
       options[:current_user] ||= current_user if defined? current_user
       options[:params] ||= params if defined? params
 
-      serialized = serializer.new(object, options).as_json(root: false)
-
-      # Add paginated_meta to arrays of objects if we have it
-      serialized.paginated_meta = object.paginated_meta if object.respond_to?(:paginated_meta) && object.paginated_meta.present? && serialized.respond_to?(:paginated_meta)
-
-      serialized
+      serializer.new(object, options).as_json(root: false)
     end
   end
 end
