@@ -32,14 +32,20 @@ module API
       module InstanceMethods
         def serializable_fields
           super
+          self._serializable_fields += _get_optional_fields_from_options
           self._serializable_fields += _get_requested_optional_fields
         end
       end
 
       private
 
+      def _get_optional_fields_from_options
+        optional_fields = Array(options.fetch(:extra_fields, []))
+        Array(self.class._optional_fields) & optional_fields.map(&:to_sym)
+      end
+
       def _get_requested_optional_fields
-        requested_optional_fields = Array(options[:params].fetch(:extra_fields, []))
+        requested_optional_fields = Array(options.fetch(:params, {}).fetch(:extra_fields, []))
         Array(self.class._optional_fields) & requested_optional_fields.map(&:to_sym)
       end
     end

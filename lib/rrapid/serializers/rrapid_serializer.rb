@@ -28,12 +28,6 @@ module API
       opts ||= {}
       attribute_names = attributes.map(&:to_s)
 
-      if only = options.fetch(:params, {})[:only]
-        attribute_names &= Array(only).map(&:to_s)
-      elsif except = options.fetch(:params, {})[:except]
-        attribute_names -= Array(except).map(&:to_s)
-      end
-
       self._serializable_fields = attribute_names
 
       generate_serialized_hash
@@ -81,10 +75,19 @@ module API
                  end
 
       if should_be_serialized?(field)
-        serializer = API::Serializer.serializer_for(response)
-        if serializer
-          response = serializer.new(response, options).as_json(root: false)
-        end
+        sub_fields, sub_associations, sub_optional_fields = sub_request_fields(field.to_s)
+
+        sub_options = {}
+        sub_options[:only] = sub_fields if sub_fields.present?
+        sub_options[:associations] = sub_associations if sub_associations.present?
+        sub_options[:extra_fields] = sub_optional_fields if sub_optional_fields.present?
+        sub_options[:params] = {}
+
+        response = serialize(response, nil, sub_options)
+        # serializer = API::Serializer.serializer_for(response)
+        # if serializer
+        #   response = serializer.new(response, options).as_json(root: false)
+        # end
       end
 
       if response.respond_to?(:serializable_hash) && serialize
@@ -92,6 +95,21 @@ module API
       end
 
       response
+    end
+
+    def sub_request_fields(field)
+      params = options.fetch(:params, {})
+      sub_fields = params[:"#{field}_fields"]
+      sub_associations = params[:"#{field}_associations"]
+      sub_optional_fields = params[:"#{field}_extra_fields"]
+
+      return {} unless params.present? && (
+                      sub_fields.present? ||
+                      sub_associations.present? ||
+                      sub_optional_fields.present?
+                    )
+
+      [sub_fields, sub_associations, sub_optional_fields]
     end
   end
 end

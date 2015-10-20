@@ -1,4 +1,4 @@
 API.configure do |config|
   # For development purposes.
-  config.exception_handler = ->(e) { fail e }
+  # config.exception_handler = ->(e) { fail e }
 end

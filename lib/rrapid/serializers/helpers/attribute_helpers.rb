@@ -96,13 +96,27 @@ module API
 
       module InstanceMethods
         def serializable_fields
-          _serializable_fields
+          fields = _serializable_fields
+
+          only = options.fetch(:params, {}).fetch(:only, []).presence || options.fetch(:only, [])
+          except = options.fetch(:params, {}).fetch(:except, []).presence || options.fetch(:except, [])
+
+          if only.present?
+            fields &= Array(only).map(&:to_s)
+          elsif except.present?
+            fields -= Array(except).map(&:to_s)
+          end
+
+          self._serializable_fields = fields
         end
 
         def attributes
           self.class._attributes.presence || object.attributes.keys
         end
       end
+
+      private
+
     end
   end
 end

@@ -52,6 +52,7 @@ module API
       module InstanceMethods
         def serializable_fields
           super
+          self._serializable_fields += _get_associations_from_options
           self._serializable_fields += _get_requested_associations
           self._serializable_fields += _get_default_associations
         end
@@ -63,17 +64,21 @@ module API
 
       private
 
+      def _get_associations_from_options
+        associations = Array(options.fetch(:associations, []))
+        Array(self.class._associations) & associations.map(&:to_sym)
+      end
+
       def _get_requested_associations
-        requested_associations = Array(options[:params].fetch(:associations, []))
-        ra = Array(self.class._associations) & requested_associations.map(&:to_sym)
+        requested_associations = Array(options.fetch(:params, {}).fetch(:associations, []))
+        returned = Array(self.class._associations) & requested_associations.map(&:to_sym)
 
-        return ra #unless API.validate_associations
+        return returned unless API.validate_associations
 
-        # return unless validate_
-        # return unless returned.present? &&
-        #               requested_associations.length != associations.length
+        bad_associations = requested_associations - returned
+        return unless bad_associations.present?
 
-        # bad_associations =
+        fail InvalidAssociation, "The %s association does not exist." % bad_associations.map { |a| "'#{a}'" }.to_sentence
       end
 
       def _get_default_associations

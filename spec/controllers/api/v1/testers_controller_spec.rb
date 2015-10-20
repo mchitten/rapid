@@ -141,7 +141,7 @@ describe Api::V1::TestersController, type: :controller do
     end
 
     describe 'with a standard exception' do
-      it 'returns the actual exception' do
+    it 'returns the actual exception' do
         allow(controller)
           .to receive(:errors)
           .and_raise(StandardError.new('Exception'))
@@ -674,19 +674,19 @@ describe Api::V1::TestersController, type: :controller do
             {
               id: 1,
               name: 'Mike'
-            }.merge(product_serialized).merge(
+            }.merge(
               post: {
                 id: 1
               }
-            ),
+            ).merge(product_serialized),
             {
               id: 2,
               name: 'Tom'
-            }.merge(product_serialized).merge(
+            }.merge(
               post: {
                 id: 1
               }
-            )
+            ).merge(product_serialized)
           ].to_json)
         end
       end
@@ -700,25 +700,25 @@ describe Api::V1::TestersController, type: :controller do
             {
               id: 1,
               name: 'Mike'
-            }.merge(product_serialized).merge(
+            }.merge(
               post: {
                 id: 1,
                 title: 'Hi',
                 blurb: "What's up?",
                 joke: 'Why was six afraid of seven?'
               }
-            ),
+            ).merge(product_serialized),
             {
               id: 2,
               name: 'Tom'
-            }.merge(product_serialized).merge(
+            }.merge(
               post: {
                 id: 1,
                 title: 'Hi',
                 blurb: "What's up?",
                 joke: 'Why was six afraid of seven?'
               }
-            )
+            ).merge(product_serialized)
           ].to_json)
         end
       end
@@ -732,7 +732,7 @@ describe Api::V1::TestersController, type: :controller do
             {
               id: 1,
               name: 'Mike'
-            }.merge(product_serialized).merge(
+            }.merge(
               post: {
                 id: 1,
                 title: 'Hi',
@@ -743,11 +743,11 @@ describe Api::V1::TestersController, type: :controller do
                   blurb: "What's up?"
                 }
               }
-            ),
+            ).merge(product_serialized),
             {
               id: 2,
               name: 'Tom'
-            }.merge(product_serialized).merge(
+            }.merge(
               post: {
                 id: 1,
                 title: 'Hi',
@@ -758,7 +758,7 @@ describe Api::V1::TestersController, type: :controller do
                   blurb: "What's up?"
                 }
               }
-            )
+            ).merge(product_serialized)
           ].to_json)
         end
       end
