@@ -111,12 +111,13 @@ module API
         end
 
         def attributes
-          self.class._attributes.presence || object.attributes.keys
+          Hash[
+            (self.class._attributes.presence || object.attributes.keys).map do |field|
+              field.is_a?(Hash) ? Array(field)[0] : [field, field]
+            end
+          ]
         end
       end
-
-      private
-
     end
   end
 end

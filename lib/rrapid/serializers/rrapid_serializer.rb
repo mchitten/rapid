@@ -39,7 +39,7 @@ module API
 
     def serializable_hash(opts = {})
       opts ||= {}
-      attribute_names = attributes.map(&:to_s)
+      attribute_names = attributes.keys.map(&:to_s)
 
       self._serializable_fields = attribute_names
 
@@ -91,6 +91,7 @@ module API
     #                 neither the serializer nor the object responds to the
     #                 assumed method.
     def get_field(field, serialize = true)
+      field = attributes.fetch(field.to_sym, field.to_sym)
       response = if respond_to?(field)
                    send(field)
                  elsif object.respond_to?(field)
