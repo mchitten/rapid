@@ -17,7 +17,7 @@ module API
         # @param associations [Array] A comma-separated list of associations.
         #
         # @example
-        #   class UserSerializer < APISerializer
+        #   class UserSerializer < API::Serializer
         #     associations :profile
         #   end
         #
@@ -37,7 +37,7 @@ module API
         # @param default_associations [Array] A comma-separated list of associations
         #                                     that should always show up.
         # @example
-        #   class UserSerializer < APISerializer
+        #   class UserSerializer < API::Serializer
         #     associations :profile, :avatar
         #     default_associations :profile
         #   end

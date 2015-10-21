@@ -1,12 +1,12 @@
 # encoding: utf-8
 
 module API
-  # The +QuirkyApi::Base+ class inherits from ActionController::Metal to offer
+  # The +API::Base+ class inherits from ActionController::Metal to offer
   # only the functionality that the API requires.  Using
   # +ActionController::Metal+ means that many standard rails methods
   # may be unavailable in the API.
   #
-  # Extend from +API::Base+ to include API functionality.
+  # Inherit from +API::Base+ to include API functionality.
   #
   # @example
   #  class Api::V1::InventionsController < API::Base
@@ -24,9 +24,9 @@ module API
     include ActionController::Helpers
     include ActionController::Rescue
     include ActionController::Caching
-    include ActionController::StrongParameters if defined?(ActionController::StrongParameters)
-    include ActionController::Cookies
-    include ActionController::Flash
+    if defined?(ActionController::StrongParameters)
+      include ActionController::StrongParameters
+    end
     include ActionController::Head
     include ActionController::HttpAuthentication::Basic::ControllerMethods
     include ActionController::HttpAuthentication::Token::ControllerMethods

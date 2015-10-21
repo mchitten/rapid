@@ -3,7 +3,7 @@
 # Exception for associations that are not valid.
 InvalidAssociation = Class.new(StandardError)
 
-# QuirkyAPI methods that are available to the entire app.
+# API helper methods that are available to the entire app.
 require 'rrapid/global_methods'
 include API::Global
 
@@ -23,5 +23,6 @@ module API
   require 'rrapid/serializers/rrapid_serializer'
   require 'rrapid/serializers/rrapid_array_serializer'
 
+  # Patch to set up Model#active_model_serializer
   require 'active_model/patch'
 end

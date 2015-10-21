@@ -23,12 +23,12 @@ module API
         #                           attribute.
         #
         # @example
-        #   class UserSerializer < APISerializer
+        #   class UserSerializer < API::Serializer
         #     attributes :id, :name, :email
         #     verify_permissions :email, -> { @current_user.can? :update, object rescue false }
         #   end
         #
-        #   class UserSerializer < APISerializer
+        #   class UserSerializer < API::Serializer
         #     attributes :id, :name, :email
         #     verify_permissions [:name, :email] do
         #       @current_user.can? :update, object rescue false
@@ -111,8 +111,9 @@ module API
         end
 
         def attributes
+          attrs = self.class._attributes.presence || object.attributes.keys
           Hash[
-            (self.class._attributes.presence || object.attributes.keys).map do |field|
+            attrs.map do |field|
               field.is_a?(Hash) ? Array(field)[0] : [field, field]
             end
           ]
