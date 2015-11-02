@@ -38,8 +38,9 @@ module API
     #           "last": "Sea"
     #         }
     #     }
-    def respond_with(response, options = {}, &block)
+    def respond_with(record, options = {}, &block)
       return if @performed_render
+      return if do_http_cache!(record)
 
       @api_response_envelope = if options.key?(:envelope)
                                  options[:envelope]
@@ -48,7 +49,7 @@ module API
                                end
 
       if block_given?
-        options = response
+        options = record
 
         # Rails seems to have an issue with caching large objects +.as_json+.
         # As a result, we need to actively transform the output +.to_json+ in
@@ -63,7 +64,7 @@ module API
           options[:serialize] = false if options[:serialize].nil?
 
           cache_key = "#{options[:cache_key]}-api-endpoint"
-          response = Rails.cache.fetch cache_key, cache_opts do
+          record = Rails.cache.fetch cache_key, cache_opts do
             data = if options[:serialize]
                      serialize(block.call)
                    else
@@ -73,40 +74,50 @@ module API
             append_meta(data, options).to_json
           end
 
-          renderable = build_json_response(response, options)
+          renderable = build_json_response(record, options)
 
           render renderable
           return
         else
-          response = yield
+          record = yield
         end
       end
 
       # Make sure we serialize unless otherwise specified.
       options[:serialize] = true if options[:serialize].nil?
 
-      return render(json: envelope(nil)) if response.nil?
+      return render(json: envelope(nil)) if record.nil?
 
       # If there's an active model serializer to speak of, use it.
       # Otherwise, just render what we've got.
-      data = if response.respond_to?(:active_model_serializer) &&
-                response.try(:active_model_serializer).present? &&
+      data = if record.respond_to?(:active_model_serializer) &&
+                record.try(:active_model_serializer).present? &&
                 options[:serialize] == true
 
                options[:params] = params
                options[:current_user] = current_user if defined? current_user
 
-               serializer = response.active_model_serializer
+               serializer = record.active_model_serializer
 
-               @serialized_data = serializer.new(response, options)
+               @serialized_data = serializer.new(record, options)
                @serialized_data.as_json(root: false)
              else
-               response
+               record
              end
 
       renderable = prepare_response(data, options)
 
-      render renderable
+      render(renderable)
+    end
+
+    def do_http_cache!(record)
+      timestamp = Array(record).map do |r|
+        r.updated_at.try(:utc) if r.respond_to?(:updated_at)
+      end.compact.max
+
+      response.last_modified ||= timestamp if timestamp
+      head :not_modified if fresh = request.fresh?(response)
+      fresh
     end
 
     def excludeable(key)

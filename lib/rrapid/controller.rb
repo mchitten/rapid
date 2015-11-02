@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 module API
   # The +API::Base+ class inherits from ActionController::Metal to offer
   # only the functionality that the API requires.  Using
