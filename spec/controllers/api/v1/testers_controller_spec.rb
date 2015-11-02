@@ -163,20 +163,6 @@ describe Api::V1::TestersController, type: :controller do
       end
     end
 
-    describe 'with CanCan::AccessDenied' do
-      it 'returns 401 unauthorized' do
-        CanCan = Class.new(Exception)
-        CanCan::AccessDenied = Class.new(Exception)
-        allow(controller)
-          .to receive(:errors)
-          .and_raise(CanCan::AccessDenied.new('Unauthorized'))
-
-        get :errors
-        expect(response.body).to eq({ errors: 'You are not authorized to do that.' }.to_json)
-        expect(response.status).to eq 401
-      end
-    end
-
     describe 'with an invalid record' do
       it 'returns 400 bad request' do
         get :invalid_request

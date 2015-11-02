@@ -31,9 +31,11 @@ module API
 
     # API functionality.
     include API::Rescue
-    include API::Bouncer
     include API::Response
     include API::Global
+
+    # Ignore verify_authenticity_token -- we don't need it for the API.
+    skip_before_action :verify_authenticity_token
 
     def self.inherited(base)
       base.send :include, ::Rails.application.routes.url_helpers

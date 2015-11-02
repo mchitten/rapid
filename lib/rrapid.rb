@@ -13,10 +13,7 @@ module API
   # Core modules
   require 'rrapid/configurable'
   require 'rrapid/rescue'
-  require 'rrapid/bouncer'
-  require 'rrapid/auth'
   require 'rrapid/response'
-  require 'rrapid/can'
   require 'rrapid/controller'
 
   # Serializers
