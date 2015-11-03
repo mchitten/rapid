@@ -147,7 +147,7 @@ describe Api::V1::TestersController, type: :controller do
           .and_raise(StandardError.new('Exception'))
 
         get :errors
-        expect(response.body).to eq({ errors: 'Something went wrong.' }.to_json)
+        expect(response.body).to eq({ errors: 'Something went wrong' }.to_json)
       end
     end
 
@@ -183,7 +183,7 @@ describe Api::V1::TestersController, type: :controller do
 
         get :errors
         expect(response.body).to eq({
-          errors: 'Not found.'
+          errors: 'Not Found'
         }.to_json)
         expect(response.status).to eq 404
       end
@@ -196,7 +196,7 @@ describe Api::V1::TestersController, type: :controller do
           .and_raise(ActiveRecord::RecordNotUnique.new('Not Unique.', nil))
 
         get :errors
-        expect(response.body).to eq({ errors: 'Record not unique.' }.to_json)
+        expect(response.body).to eq({ errors: 'Not Unique.' }.to_json)
         expect(response.status).to eq 409
       end
     end

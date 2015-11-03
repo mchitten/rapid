@@ -1,140 +1,98 @@
 module API
   module Response
     module Errors
-      # Returns a 400 bad request response.
-      #
-      # @param e [String] A string that describes the errors that happened.
-      #
-      def bad_request(e)
-        error_response(e, 400)
-      end
+      SUCCESS_CODES = %i(
+        ok
+        created
+        accepted
+        non_authoritative_information
+        no_content
+        reset_content
+        partial_content
+        multi_status
+        already_reported
+        im_used
+      ).freeze
 
-      # Returns a 400 bad request response.
-      #
-      # @param errors [String] A string that describes the errors that happened.
-      #
-      def respond_bad_request(errors)
-        error_response(errors)
-      end
+      ERROR_CODES = %i(
+        bad_request
+        unauthorized
+        payment_required
+        forbidden
+        not_found
+        method_not_allowed
+        not_acceptable
+        proxy_authentication_required
+        request_timeout
+        conflict
+        gone
+        length_required
+        precondition_failed
+        payload_too_large
+        uri_too_long
+        unsupported_media_type
+        range_not_satisfiable
+        expectation_failed
+        unprocessable_entity
+        locked
+        failed_dependency
+        upgrade_required
+        precondition_required
+        too_many_requests
+        request_header_fields_too_large
+      ).freeze
 
-      alias_method :param_invalid, :respond_bad_request
+      EXCEPTION_CODES = %i(
+        not_implemented
+        bad_gateway
+        service_unavailable
+        gateway_timeout
+        http_version_not_supported
+        variant_also_negotiates
+        insufficient_storage
+        loop_detected
+        not_extended
+        network_authentication_required
+      ).freeze
 
-      # Returns a 400 bad request, and maps out individual errors based on
-      # problematic fields.
-      #
-      # @param errors [Object] An object of errors that will be 'translated'
-      #                        through +translate_errors+.
-      #
-      def respond_bad_request_with_errors(errors)
-        errors = translate_errors(errors)
-        respond_bad_request(errors)
-      end
+      TYPE_MAP = {
+        :SUCCESS_CODES => :message,
+        :ERROR_CODES => :errors,
+        :EXCEPTION_CODES => :errors
+      }.freeze
 
-      # Returns a 400 bad request, and maps out individual errors based on
-      # problematic fields.
-      #
-      # @param e [Object] An object that hs errors on it.
-      #
-      # @see respond_bad_request_with_errors
-      #
-      def record_invalid(e)
-        respond_bad_request_with_errors(e.record.errors)
-      end
-
-      # Returns a 401 unauthorized response.
-      #
-      # @param e [Exception] The exception that was raised.
-      #
-      def unauthorized(e)
-        error_response('You are not authorized to do that.', 401)
-      end
-
-      # Returns 401 (Unauthorized).  If +message+ is blank, will return an
-      # +Unauthorized+ header instead of outputting anything.
-      #
-      # @param message [String] If applicable, a message describing the problem.
-      #
-      def respond_unauthorized(message = nil)
-        if message
-          error_response(message, 401)
-        else
-          head :unauthorized
+      %w(SUCCESS ERROR EXCEPTION).each do |type|
+        const_get(:"#{type}_CODES").each do |code|
+          define_method(:"render_#{code}") do |message = nil|
+            message = message.message if message.is_a?(Exception)
+            message = nil if message.instance_of?(Exception)
+            render_status(message, Rack::Utils.status_code(code), TYPE_MAP[:"#{type}_CODES"])
+          end
         end
-        @performed_render = true
       end
 
-      # Returns 403 (Forbidden) response.
-      #
-      # @param e [Exception] The exception object.
-      #
-      def forbidden(e)
-        error_response('You are forbidden to do that.', 403)
+      private
+
+      def render_status(message, status, envelope = :message)
+        render prepare_response(message, envelope: envelope, status: status)
       end
 
-      # Returns 403 (Forbidden) header.
-      #
-      def respond_forbidden
-        head :forbidden
-        @performed_render = true
-      end
-
-      # Returns a 404 not found response.
-      #
-      def not_found(e)
-        error_response('Not found.', 404)
-      end
-
-      # Returns 404 (Not Found) header.
-      #
-      def respond_not_found
-        head :not_found
-        @performed_render = true
-      end
-
-      alias_method :unknown_action, :respond_not_found
-
-      # Returns 409 (conflict) for not unique records.
-      #
-      # @param e [Exception] The exception that was raised.
-      #
-      def not_unique(e)
-        error_response('Record not unique.', 409)
-      end
-
-      alias_method :conflict, :not_unique
-
-      # Returns 500 (Internal Server Error).
-      #
-      # @param e [Exception] The exception that was raised.
-      #
-      def internal_error(e)
+      def render_internal_server_error(e)
         if API.exception_handler
           API.exception_handler.call(e)
         else
           Rails.logger.error e.message
         end
 
-        error_response('Something went wrong.')
+        render_status('Something went wrong', 500, :errors)
       end
 
-      # Validates multiple objects and returns their errors as a hash.  The key
-      # of each element will be "#{class_name}:#{object_id}".  The value will
-      # be the result of +translate_errors+.
-      #
-      # @param objects [Array] An array of objects to validate.
-      #
-      # @return [Hash] A hash of objects and their errors, if applicable.
-      #
-      def validate_multiple(objects)
-        objects.each_with_object({}) do |obj, errors|
-          if obj.invalid?
-            matched = obj.to_s.match(/([A-Za-z0-9\-\_]*)\:([A-Za-z0-9\-\_]*)/)
-            klass, oid = matched[1], matched[2]
-
-            errors["#{klass}:#{oid}"] = translate_errors(obj.errors)
-          end
-        end
+      def render_record_invalid(e)
+        errors = translate_errors(e.record.errors)
+        render_bad_request(errors)
       end
+
+      private
 
       # Retrieves all errors on an object and maps each error to the specific
       # problematic field.
@@ -172,34 +130,6 @@ module API
         end
       end
 
-      # Returns an error with a status code.
-      #
-      # @param msg [String] The message to show up.
-      # @param status [Fixnum] The status code to return.  Default is 400.
-      #
-      def error_response(msg, status = 400)
-        render prepare_response(msg, envelope: 'errors', status: status)
-      end
-
-      # Return an error with a status code.
-      #
-      # @param e [Exception] A raised exception.
-      # @param status [Fixnum] A valid status code.
-      #
-      # @see error_response
-      #
-      def error(e, status = 400)
-        error_response(e.message, status)
-      end
-
-      # Return an error rescues from Paginated::InvalidPaginationOptions.
-      # Keys the response with paginated_option hash
-      #
-      # @param e [Exception] A raised exception.
-      #
-      def paginated_error(e)
-        error_response({paginated_options: e.message}, 400)
-      end
     end
   end
 end

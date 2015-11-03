@@ -7,11 +7,11 @@ module API
   module Rescue
     def self.included(base)
       if base.respond_to?(:rescue_from) && !API.show_exceptions
-        base.send :rescue_from, '::StandardError', with: :internal_error                # 500 Internal Server Error
-        base.send :rescue_from, '::InvalidAssociation', with: :error                    # 400 Bad Request
-        base.send :rescue_from, '::ActiveRecord::RecordInvalid', with: :record_invalid  # 400 Bad Request
-        base.send :rescue_from, '::ActiveRecord::RecordNotFound', with: :not_found      # 404 Not Found
-        base.send :rescue_from, '::ActiveRecord::RecordNotUnique', with: :not_unique    # 409 Conflict
+        base.send :rescue_from, '::StandardError', with: :render_internal_server_error         # 500 Internal Server Error
+        base.send :rescue_from, '::InvalidAssociation', with: :render_bad_request              # 400 Bad Request
+        base.send :rescue_from, '::ActiveRecord::RecordInvalid', with: :render_record_invalid  # 400 Bad Request
+        base.send :rescue_from, '::ActiveRecord::RecordNotFound', with: :render_not_found      # 404 Not Found
+        base.send :rescue_from, '::ActiveRecord::RecordNotUnique', with: :render_conflict      # 409 Conflict
       end
     end
   end
