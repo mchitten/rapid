@@ -75,7 +75,7 @@ module API
         return returned unless API.validate_associations
 
         bad_associations = requested_associations - returned
-        return unless bad_associations.present?
+        return returned unless bad_associations.present?
 
         fail InvalidAssociation, "The %s association does not exist." % bad_associations.map { |a| "'#{a}'" }.to_sentence
       end
