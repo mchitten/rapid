@@ -98,12 +98,21 @@ module API
         def serializable_fields
           fields = _serializable_fields
 
-          only = options.fetch(:params, {}).fetch(:only, []).presence || options.fetch(:only, [])
-          except = options.fetch(:params, {}).fetch(:except, []).presence || options.fetch(:except, [])
+          params = options.fetch(:params, {})
+
+          only = params.fetch(:only, []).presence ||
+                 params.fetch(:fields, []).presence ||
+                 options.fetch(:only, []).presence ||
+                 options.fetch(:fields, [])
+
+          except = params.fetch(:except, []).presence ||
+                   options.fetch(:except, [])
 
           if only.present?
+            only = only.split(',') if only.is_a?(String)
             fields &= Array(only).map(&:to_s)
           elsif except.present?
+            except = except.split(',') if except.is_a?(String)
             fields -= Array(except).map(&:to_s)
           end
 
