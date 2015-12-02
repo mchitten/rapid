@@ -40,12 +40,14 @@ module API
       private
 
       def _get_optional_fields_from_options
-        optional_fields = Array(options.fetch(:extra_fields, []))
+        optional_fields = options.fetch(:extra_fields, [])
+        optional_fields = optional_fields.split(',') unless optional_fields.is_a?(Array)
         Array(self.class._optional_fields) & optional_fields.map(&:to_sym)
       end
 
       def _get_requested_optional_fields
-        requested_optional_fields = Array(options.fetch(:params, {}).fetch(:extra_fields, []))
+        requested_optional_fields = options.fetch(:params, {}).fetch(:extra_fields, [])
+        requested_optional_fields = requested_optional_fields.split(',') unless requested_optional_fields.is_a?(Array)
         Array(self.class._optional_fields) & requested_optional_fields.map(&:to_sym)
       end
     end

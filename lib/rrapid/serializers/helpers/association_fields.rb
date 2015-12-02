@@ -64,12 +64,14 @@ module API
       private
 
       def _get_associations_from_options
-        associations = Array(options.fetch(:associations, []))
+        associations = options.fetch(:associations, [])
+        associations = associations.split(',') unless associations.is_a?(Array)
         Array(self.class._associations) & associations.map(&:to_sym)
       end
 
       def _get_requested_associations
-        requested_associations = Array(options.fetch(:params, {}).fetch(:associations, []))
+        requested_associations = options.fetch(:params, {}).fetch(:associations, [])
+        requested_associations = requested_associations.split(',') unless requested_associations.is_a?(Array)
         returned = Array(self.class._associations) & requested_associations.map(&:to_sym)
 
         return returned unless API.validate_associations
