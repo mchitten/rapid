@@ -20,10 +20,10 @@ module API
         #
         # @example
         #   class UserSerializer < API::Serializer
-        #     optional :email, :is_russian
+        #     optional :email, :age, :is_russian
         #   end
         #
-        #   # Request like this: /api/v1/users/1?extra_fields[]=email
+        #   # Request like this: /api/v1/users/1?extra_fields=email,age
         def optional(*fields)
           self._optional_fields = fields
         end

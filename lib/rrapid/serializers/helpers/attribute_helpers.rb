@@ -60,7 +60,7 @@ module API
         # @return [Array] An array of warnings.
         #
         # @example
-        #   # GET /api/v1/users/1?extra_fields[]=asdfg
+        #   # GET /api/v1/users/1?extra_fields=asdfg
         #
         #   {
         #     "data": {
